@@ -1,0 +1,15 @@
+.songs-container{
+    margin: 50px 0;
+}
+
+.subtitle{
+    font-size: 2em;
+}
+
+.time-range-select{
+    background: none;
+    color: #fff;
+    font-size: 1.5em;
+    margin: 0 15px;
+    border: none;
+}

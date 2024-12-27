@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: ./dockerization/Dockerfile
+    container_name: app-container
+    ports:
+      - "3000:3000"  # Frontend (React)
+      - "8888:8888"  # Backend (Express)
+    env_file:
+      - ../app-web/.env  # Cargar las variables de entorno desde app-web
+    volumes:
+      - ../app-web:/usr/src/app
+    depends_on:
+      - mariadb
+      - neo4j
+    networks:
+      - red-spotify
+
+  mariadb:
+    image: mariadb
+    container_name: mariadb-container
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: spotify
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    volumes:
+      - ./mariadb/data:/var/lib/mysql
+      - ./mariadb/init:/docker-entrypoint-initdb.d
+    restart: unless-stopped
+    networks:
+      - red-spotify
+
+  neo4j:
+    image: neo4j
+    container_name: neo4j-container
+    ports:
+      - "7888:7474"
+      - "7999:7687"
+    environment:
+      - NEO4J_AUTH=neo4j/password
+    volumes:
+      - ./neo4j/data:/data
+      - ./neo4j/conf:/conf
+      - ./neo4j/logs:/logs
+      - ./neo4j/plugins:/plugins
+    restart: unless-stopped
+    networks:
+      - red-spotify
+
+networks:
+  red-spotify:
+    external: true
