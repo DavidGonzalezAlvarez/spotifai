@@ -19,7 +19,7 @@ El proyecto de **SpotifAI** tiene como principal objetivo facilitar a las person
 3. **Base de datos:**
    - Utiliza una base de datos principal en Neo4j para la relación de canciones y artistas, y una base de datos MariaDB para almacenar información detallada de las canciones en el futuro.
 
-4. **Contenerización:**
+4. **Dockerización:**
    - Tanto el servidor web como las bases de datos están montados en Docker con comunicación entre contenedores.
 
 ## Instrucciones de instalación y despliegue
