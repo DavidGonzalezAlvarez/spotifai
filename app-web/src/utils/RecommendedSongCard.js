@@ -2,14 +2,15 @@ import "../styles/RecommendedSongCard.css";
 import axios from "axios";
 import { useState } from "react";
 
-const RecommendedSongCard = ({ song, title, username, updateRecommendation }) => {
+const RecommendedSongCard = ({ song, userId, updateRecommendation }) => {
   const [feedbackSong, setFeedbackSong] = useState(null); // Estado para saber cuál se pulsó
 
   const likedSong = async () => {
-    console.log("Liked:", title, username);
+    console.log("Liked:", song.name, userId);
 
     try {
-      const response = await axios.post("/api/save_liked", { username, title });
+      const id = song.id
+      const response = await axios.post("/api/save_liked", { userId, id });
 
       if (response.status === 200) {
         console.log("Canción guardada como 'Liked'.");
@@ -23,10 +24,11 @@ const RecommendedSongCard = ({ song, title, username, updateRecommendation }) =>
   };
 
   const dislikedSong = async () => {
-    console.log("Disliked:", title, username);
+    console.log("Disliked:", song.name, userId);
 
     try {
-      const response = await axios.post("/api/save_disliked", { username, title });
+      const id = song.id
+      const response = await axios.post("/api/save_disliked", { userId, id });
 
       if (response.status === 200) {
         console.log("Canción guardada como 'Disliked'.");

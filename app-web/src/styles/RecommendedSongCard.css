@@ -1,14 +1,14 @@
 .recommended-card{
-    max-height: 1200px;
     border-top: solid 4px #fff;
     border-bottom: solid 4px #fff;
     padding: 30px 100px;
-    margin-top: 30px;
+    margin-top: 10px;
+    margin-bottom: 50px;
 }
 
 .recommended-card-img{
-    width: 400px;
-    border-radius: 6% 2% 2% 2%;
+    width: 250px;
+    border-radius: 2% 2% 2% 2%;
 }
 
 .recommended-card-top{
@@ -24,14 +24,14 @@
 
 .recommended-card-title{
     text-align: center;
-    font-size: 2.5em;
+    font-size: 2em;
     font-weight: 700;
     padding: 40px 0;
 }
 
 .card-text{
     text-align: center;
-    font-size: 1.2em;
+    font-size: 1.1em;
 }
 
 .recommended-card-body{
@@ -44,9 +44,9 @@
     color: #fff;
     border: #fff solid 2px;
     padding: 20px 50px;
-    font-size: 2em;
+    font-size: 1.3em;
     font-weight: 500;
-    margin: 50px 0;
+    margin: 30px 0;
     display: inline-block;
 }
 
@@ -56,7 +56,7 @@
 }
 
 .recommended-card-feedback-button{
-    font-size: 3em;
+    font-size: 2em;
     width: fit-content;
     padding: 0;
 }
@@ -66,7 +66,7 @@
     border: 2px solid #fff;
     color: #fff;
     font-size: 1.2em;
-    min-height: 130px;
+    min-height: 100px;
     resize: none;
     border-radius: 5px;
 }
@@ -79,7 +79,7 @@
     color: #fff;
     border: #fff solid 2px;
     padding: 20px 50px;
-    font-size: 2em;
+    font-size: 1.5em;
     font-weight: 500;
     margin: 20px 0;
     display: inline-block;
@@ -109,14 +109,14 @@
 }
 
 .recommended-card-feedback-title{
-    font-size: 2em;
+    font-size: 1.5em;
     text-align: center;
     font-weight: 500;
+    margin: 0;
 }
   
-  .recommended-card-feedback-button.selected {
+.recommended-card-feedback-button.selected {
     background-color: #6e6e6e; /* Fondo cuando está seleccionado */
     color: #fff; /* Texto blanco */
     transform: scale(1.1); /* Efecto de escala para destacar */
-  }
-  
+}

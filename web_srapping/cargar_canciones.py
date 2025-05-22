@@ -57,7 +57,7 @@ def procesar_archivo_y_guardar_en_neo4j(ruta_archivo, db_handler):
 # Main
 if __name__ == "__main__":
     # Ruta al archivo de texto
-    RUTA_TXT = "canciones_y_artistas.txt"
+    RUTA_TXT = "canciones.txt"
 
     # Inicializar el handler de Neo4j
     db_handler = Neo4jHandler(URI, USERNAME, PASSWORD)

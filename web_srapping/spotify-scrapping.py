@@ -37,6 +37,7 @@ urls_paises = {
 
 # Fechas para reemplazar "latest"
 fechas = [
+    "2025-04-03", "2025-03-06", "2025-02-06", "2025-01-09", "2024-12-12"
     "2024-10-31", "2024-10-03", "2024-08-29", "2024-08-01", "2024-06-27", 
     "2024-05-30", "2024-05-02", "2024-03-28", "2024-02-29", "2024-02-01",
     "2023-12-28", "2023-11-30", "2023-10-26", "2023-09-28", "2023-08-31",
@@ -76,7 +77,7 @@ with open("canciones_y_artistas.txt", "w", encoding="utf-8") as file:
 
             # Navegar a la URL del país y fecha
             driver.get(url)
-            time.sleep(15)  # Esperar para que la página cargue completamente
+            time.sleep(10)  # Esperar para que la página cargue completamente
 
             # Obtener el código HTML de la página
             page_source = driver.page_source
@@ -97,7 +98,7 @@ with open("canciones_y_artistas.txt", "w", encoding="utf-8") as file:
                             nombres_artistas = [artista.get_text(strip=True) for artista in artistas]
                         else:
                             nombres_artistas = ["Artista desconocido"]
-                        resultado = f"{pais} ({fecha}): {nombre_cancion} - {', '.join(nombres_artistas)}"
+                        resultado = f"{pais} ({fecha}): {nombre_cancion} //||\\ {', '.join(nombres_artistas)}"
                         print(resultado)  # Mostrar en consola
                         file.write(resultado + "\n")  # Guardar en el archivo
             except Exception as e:

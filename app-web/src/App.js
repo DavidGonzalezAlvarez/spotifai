@@ -1,12 +1,14 @@
 import 'bootstrap/dist/css/bootstrap.css';
 import './styles/App.css';
 import spotify from './assets/spotify.png';
+import alert from './assets/alert-circle.png';
 import axios from 'axios';
 import { useEffect, useRef, useState } from 'react';
 import { Routes, Route, Link } from 'react-router-dom';
 import Songs from './pages/Songs';
 import Artists from './pages/Artists';
 import Recommender from './pages/Recommender';
+import Admin from './pages/Admin';
 
 const server_url = process.env.REACT_APP_SERVER_URL;
 
@@ -23,8 +25,11 @@ export default function App() {
   const [userData, setUserData] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [processing, setProcessing] = useState(true);
   const [recommendedSong, setRecommendedSong] = useState(false);
-  const [songTitle, setSongTitle] = useState(false)
+  const [showSuccess, setShowSuccess] = useState(true);
+  const [showWarning, setShowWarning] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const login = () => {
     axios.get(server_url + '/login')
@@ -51,6 +56,10 @@ export default function App() {
       axios.get(server_url + '/get/user', { withCredentials: true })
         .then((response) => {
           setUserData(response.data.userData);
+          axios.post(server_url + "/api/save-user", response.data.userData)
+          axios.get(server_url + `/api/get/admin?id=${response.data.userData.id}`).then((res) => {
+            setIsAdmin(res.data[0].isAdmin);
+          });
           getUserData();
         })
         .catch((error) => {
@@ -69,7 +78,6 @@ export default function App() {
       });
     window.location.href = 'http://localhost:3000/';
   };
-
   const getUserData = () => {
     setLoading(true);
 
@@ -229,57 +237,94 @@ export default function App() {
   const hasExecuted = useRef(false);
 
   const hasRecommended = useRef(false)
-
   useEffect(() => {
-    if (yearSongs && monthSongs && weekSongs && yearArtistsSongs && monthArtistsSongs && weekArtistsSongs && userData && !hasExecuted.current) {
+    if (
+      yearSongs && monthSongs && weekSongs &&
+      yearArtistsSongs && monthArtistsSongs && weekArtistsSongs &&
+      userData && !hasExecuted.current
+    ) {
       hasExecuted.current = true;
+      setProcessing(true);
       console.log("Guardando datos en la base de datos");
-      console.log(yearArtistsSongs);
-      console.log(monthArtistsSongs);
-      console.log(weekArtistsSongs);
-      const requestData = {
-        yearSongs,
-        monthSongs,
-        weekSongs,
-        yearArtistsSongs,
-        monthArtistsSongs,
-        weekArtistsSongs,
-        userData,
+
+      const songsMap = new Map(); // Clave: song.id, Valor: canción
+
+      // Recolectamos todas las canciones y evitamos duplicados
+      const collectSongs = () => {
+        // Canciones que le gustan al usuario directamente
+        const likedUserSongs = [
+          ...yearSongs.items,
+          ...monthSongs.items,
+          ...weekSongs.items
+        ].map(song => ({
+          ...song,
+          desdeArtista: false
+        }));
+
+        // Canciones sugeridas por los artistas favoritos
+        const likedArtistSongs = [
+          ...yearArtistsSongs.flatMap(artist => artist.tracks),
+          ...monthArtistsSongs.flatMap(artist => artist.tracks),
+          ...weekArtistsSongs.flatMap(artist => artist.tracks)
+        ].map(song => ({
+          ...song,
+          desdeArtista: true
+        }));
+
+        const allSongs = [...likedUserSongs, ...likedArtistSongs];
+
+        for (const song of allSongs) {
+          const existing = songsMap.get(song.id);
+
+          if (!existing || (existing.desdeArtista === true && song.desdeArtista === false)) {
+            songsMap.set(song.id, song);
+          }
+        }
       };
-      axios.post(server_url + "/api/save-data", requestData)
-        .then((response) => {
-          console.log("Datos guardados con exito: ", response.data);
-        })
-        .catch((error) => {
-          console.error('Error al guardar los datos:', error);
-        })
+
+      const processAllSongs = async () => {
+        collectSongs();
+
+        const uniqueSongs = Array.from(songsMap.values());
+        console.log(uniqueSongs);
+        try {
+          const response = await axios.post(`${server_url}/api/process-and-save`, {
+            canciones: uniqueSongs,
+            user: userData
+          });
+          setProcessing(false);
+          setShowSuccess(true);
+          console.log("✅ Canciones procesadas y guardadas:", response.data);
+        } catch (error) {
+          console.error("❌ Error al procesar canciones:", error);
+        }
+      };
+
+      processAllSongs();
     }
-  }, [yearSongs, monthSongs, weekSongs, yearArtistsSongs, monthArtistsSongs, weekArtistsSongs, userData])
+  }, [yearSongs, monthSongs, weekSongs, yearArtistsSongs, monthArtistsSongs, weekArtistsSongs, userData]);
+
 
   useEffect(() => {
     if (!hasRecommended.current && hasExecuted.current && userData) {
       hasRecommended.current = true;
-      console.log("Generando recomendacion");
       getRecommendation();
     }
-  });
+  }, [hasRecommended, hasExecuted, userData]);
 
   const getRecommendation = () => {
     setRecommendedSong(null);
     axios.get(server_url + "/api/get/recommendation", {
       params: {
-        name: userData.display_name
+        id: userData.id
       }
     }).then((response) => {
-      console.log(response);
-      setSongTitle(response.data.title);
       axios.get(server_url + '/get/songInfo', {
-        params: { songName: encodeURIComponent(response.data.title) },
+        params: { id: encodeURIComponent(response.data.recomendaciones[0].spotify_id) },
         withCredentials: true
       }).then((response) => {
-        const recommended = JSON.parse(response.data.tracks);
-        setRecommendedSong(recommended.tracks.items[0]);
-        console.log(recommended);
+        const recommended = JSON.parse(response.data.track);
+        setRecommendedSong(recommended);
       });
     });
   }
@@ -291,6 +336,30 @@ export default function App() {
           <img src={spotify} alt="Logo" className="logo" />
           <Link to='/' className="navbar-brand h1">SpotifAI</Link>
         </div>
+        {isAuthenticated && !processing && showSuccess && (
+          <div className="success-container" role="alert">
+            Canciones procesadas correctamente.
+            <button type="button" className="btn-close" onClick={() => setShowSuccess(false)}></button>
+          </div>
+        )}
+          {isAuthenticated && processing && (
+            <div className="alert-container">
+              <button
+                type="button"
+                className='button-alert'
+                onClick={() => setShowWarning(!showWarning)}
+                title="Ver mensaje"
+              >
+              <img src={alert}></img>
+              </button>
+              { showWarning && (
+                <div className="alert-text-container" role="alert">
+                  Procesando canciones, las recomendaciones seran menos precisas.
+                </div>
+              )}
+            </div>
+          )}
+
         <div>
           {!isAuthenticated || userData == null ? (
             <button onClick={login} className="btn btn-outline-light me-2 nav-btn">Log In</button>
@@ -301,6 +370,9 @@ export default function App() {
                 {userData.display_name}
               </button>
               <ul className="dropdown-menu">
+                { isAdmin && (
+                  <li><Link to="/admin" className="dropdown-item">Admin</Link></li>
+                )}
                 <li><Link to="/songs" className="dropdown-item">Canciones</Link></li>
                 <li><Link to="/artists" className="dropdown-item">Artistas</Link></li>
                 <li><button onClick={logout} className="dropdown-item" type="button">Log Out</button></li>
@@ -338,7 +410,11 @@ export default function App() {
           />
           <Route
             path='/recommender'
-            element={<Recommender song={recommendedSong} title={songTitle} userData={userData} updateRecommendation={getRecommendation} />}
+            element={<Recommender song={recommendedSong} userData={userData} updateRecommendation={getRecommendation} />}
+          />
+          <Route
+            path='/admin'
+            element={ <Admin/>}
           />
         </Routes>
       )}

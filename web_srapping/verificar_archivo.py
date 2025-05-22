@@ -7,5 +7,5 @@ def verificar_archivo(ruta_archivo):
         print(f"Error al leer el archivo: {e}")
 
 if __name__ == "__main__":
-    RUTA_TXT = "canciones_y_artistas.txt"
+    RUTA_TXT = "canciones_sin_repetidas.txt"
     verificar_archivo(RUTA_TXT)

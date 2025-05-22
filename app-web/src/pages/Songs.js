@@ -40,7 +40,7 @@ export default function Songs({ yearSongs, monthSongs, weekSongs }) {
             <TrackCard
                 key={index}
                 title={track.name}
-                artists={track.artists.map((artist) => artist.name).join(' ')}
+                artists={track.artists.map((artist) => artist.name).join(', ')}
                 album={track.album.name}
                 duration={formatDuration(track.duration_ms)}
                 imageUrl={track.album.images[0].url}
